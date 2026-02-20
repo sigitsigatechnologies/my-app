@@ -1,0 +1,33 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: wms
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  api:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.api
+    env_file:
+      - ../apps/api/.env
+    depends_on:
+      - postgres
+    ports:
+      - '4000:4000'
+  web:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.web
+    env_file:
+      - ../apps/web/.env
+    depends_on:
+      - api
+    ports:
+      - '3000:3000'
+volumes:
+  pgdata:

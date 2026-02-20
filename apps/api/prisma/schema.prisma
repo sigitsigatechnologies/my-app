@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(STAFF)
+  createdAt    DateTime @default(now())
+  auditLogs    AuditLog[]
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  items Item[]
+}
+
+model Item {
+  id          Int       @id @default(autoincrement())
+  name        String
+  sku         String    @unique
+  barcode     String?   @unique
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  unit        String?   @default("pcs")
+  minStock    Int?      @default(0)
+  createdAt   DateTime  @default(now())
+  stocks      Stock[]
+  stockInItems  StockInItem[]
+  stockOutItems StockOutItem[]
+}
+
+model Warehouse {
+  id       Int    @id @default(autoincrement())
+  name     String @unique
+  location String
+  stocks   Stock[]
+}
+
+model Stock {
+  id          Int       @id @default(autoincrement())
+  itemId      Int
+  warehouseId Int
+  quantity    Int       @default(0)
+  item        Item      @relation(fields: [itemId], references: [id])
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@unique([itemId, warehouseId])
+}
+
+model Supplier {
+  id       Int    @id @default(autoincrement())
+  name     String
+  phone    String?
+  address  String?
+  stockIns StockIn[]
+}
+
+model StockIn {
+  id          Int          @id @default(autoincrement())
+  supplierId  Int
+  date        DateTime     @default(now())
+  total       Int          @default(0)
+  supplier    Supplier     @relation(fields: [supplierId], references: [id])
+  items       StockInItem[]
+}
+
+model StockInItem {
+  id        Int     @id @default(autoincrement())
+  stockInId Int
+  itemId    Int
+  qty       Int
+  stockIn   StockIn @relation(fields: [stockInId], references: [id])
+  item      Item    @relation(fields: [itemId], references: [id])
+}
+
+model StockOut {
+  id          Int          @id @default(autoincrement())
+  date        DateTime     @default(now())
+  destination String?
+  items       StockOutItem[]
+}
+
+model StockOutItem {
+  id         Int      @id @default(autoincrement())
+  stockOutId Int
+  itemId     Int
+  qty        Int
+  stockOut   StockOut @relation(fields: [stockOutId], references: [id])
+  item       Item    @relation(fields: [itemId], references: [id])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  action    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}

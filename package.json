@@ -1,0 +1,22 @@
+{
+  "name": "wms-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "pnpm --filter @wms/web dev",
+    "dev:api": "pnpm --filter @wms/api start:dev",
+    "build": "pnpm -r build",
+    "build:web": "pnpm --filter @wms/web build",
+    "build:api": "pnpm --filter @wms/api build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "prisma:generate": "pnpm --filter @wms/api prisma generate",
+    "prisma:migrate": "pnpm --filter @wms/api prisma migrate dev --name init",
+    "prisma:seed": "pnpm --filter @wms/api prisma db seed"
+  }
+}
